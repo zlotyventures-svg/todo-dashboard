@@ -1,3 +1,112 @@
+<!-- 🔒 Simple client-side gate (paste immediately after <body>) -->
+<script>
+  // Lock immediately so nothing flashes before the gate
+  document.documentElement.setAttribute('data-locked', '1');
+  // Auto-unlock for this tab if already verified
+  if (sessionStorage.getItem('gate_ok') === 'yes') {
+    document.documentElement.removeAttribute('data-locked');
+  }
+</script>
+
+<style>
+  /* Hide everything on the page except the gate while locked */
+  html[data-locked] body > :not(#gateOverlay) { display: none !important; }
+
+  /* Gate overlay styles */
+  #gateOverlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 800px at 50% 30%, rgba(255,255,255,0.65), rgba(240,245,255,0.85));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    z-index: 999999;
+  }
+  #gateCard {
+    width: min(92vw, 420px);
+    padding: 26px 22px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+    text-align: center;
+  }
+  #gateCard h1 { margin: 0 0 10px; font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+  #gateCard p  { margin: 0 0 18px; color: #334155; }
+
+  .gateInput {
+    width: 100%; padding: 12px 14px; margin-bottom: 12px;
+    border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.9);
+    outline: none; font-size: 1rem;
+    transition: box-shadow .2s ease;
+  }
+  .gateInput:focus { box-shadow: 0 0 0 3px rgba(0,122,255,.25); }
+
+  .gateBtn {
+    width: 100%; padding: 12px 14px; border: 0; border-radius: 12px;
+    color: #fff; font-weight: 600; cursor: pointer; font-size: 1rem;
+    background: linear-gradient(180deg, #4da3ff, #1e80ff);
+    box-shadow: 0 8px 24px rgba(30,128,255,.35), inset 0 1px 0 rgba(255,255,255,.3);
+    transition: transform .1s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .gateBtn:hover   { filter: brightness(1.05); }
+  .gateBtn:active  { transform: translateY(1px); box-shadow: 0 6px 18px rgba(30,128,255,.35); }
+
+  #gateError {
+    height: 18px; margin-top: 8px; color: #ef4444; font-size: .9rem;
+  }
+</style>
+
+<div id="gateOverlay" role="dialog" aria-modal="true">
+  <div id="gateCard">
+    <h1>Enter Access Code</h1>
+    <p>This site is private.</p>
+    <input id="gateInput" class="gateInput" type="password" inputmode="text"
+           placeholder="Access code" autocomplete="off" />
+    <button id="gateBtn" class="gateBtn" type="button">Unlock</button>
+    <div id="gateError" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const OK = 'mrsir';                 // <<< your code
+    const $ = (id) => document.getElementById(id);
+    const input = $('gateInput'), btn = $('gateBtn'), err = $('gateError');
+
+    function tryUnlock() {
+      const val = (input.value || '').trim();
+      if (val === OK) {
+        sessionStorage.setItem('gate_ok', 'yes');
+        document.documentElement.removeAttribute('data-locked');
+        const ov = document.getElementById('gateOverlay');
+        if (ov) ov.remove();
+      } else {
+        err.textContent = 'Invalid code';
+        input.select();
+      }
+    }
+
+    // If session already OK, remove overlay immediately
+    if (sessionStorage.getItem('gate_ok') === 'yes') {
+      const ov = document.getElementById('gateOverlay');
+      if (ov) ov.remove();
+      return;
+    }
+
+    // Bind events
+    btn.addEventListener('click', tryUnlock);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') tryUnlock();
+    });
+
+    // Focus input on show
+    setTimeout(() => input.focus(), 0);
+  })();
+</script>
+<!-- 🔒 end gate -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
