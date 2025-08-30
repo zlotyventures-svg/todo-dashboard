@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern To‑Do Dashboard</title>
+    <style>
+        :root {
+            --bg-gradient-start: rgba(255, 255, 255, 0.8);
+            --bg-gradient-end: rgba(245, 245, 250, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.5);
+            --card-border: rgba(255, 255, 255, 0.6);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --accent-color: #007aff; /* Apple blue */
+            --personal-color: #fce4ec;
+            --work-color: #e3f2fd;
+            --company-color: #e8f5e9;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            min-height: 100vh;
+            color: #333;
+        }
+
+        h1, h2, h3, h4 {
+            margin: 0 0 0.5em;
+            font-weight: 600;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        /* Home page styles */
+        #homePage {
+            text-align: center;
+        }
+        #homePage h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5em;
+        }
+        #homePage p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5em;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--accent-color);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 122, 255, 0.3);
+        }
+
+        /* Main app layout */
+        #appPage {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        header.header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        header.header nav a {
+            color: var(--accent-color);
+            text-decoration: none;
+            margin-left: 10px;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        header.header nav a:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dashboard section */
+        #dashboard {
+            margin-bottom: 30px;
+        }
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .stat.card {
+            flex: 1;
+            min-width: 140px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 6px var(--shadow-color);
+            transition: transform 0.3s ease;
+        }
+        .stat.card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .progress-container {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+        .progress-bar {
+            height: 16px;
+            background: rgba(0, 122, 255, 0.15);
+        }
+        .progress-inner {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0;
+            transition: width 0.4s ease;
+        }
+        .category-counts {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #333;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--card-border);
+        }
+        .category-personal { background: var(--personal-color); }
+        .category-work { background: var(--work-color); }
+        .category-company { background: var(--company-color); }
+
+        /* Task form */
+        #taskForm {
+            margin-bottom: 30px;
+        }
+        #taskForm h3 {
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 1rem;
+            transition: box-shadow 0.3s ease;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 122, 255, 0.4);
+        }
+        .form-actions {
+            text-align: right;
+        }
+        .form-actions .btn {
+            margin-top: 10px;
+        }
+
+        /* Tasks section */
+        #taskList {
+            margin-bottom: 40px;
+        }
+        .task-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px var(--shadow-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .task-card.done {
+            opacity: 0.7;
+            filter: grayscale(0.4);
+        }
+        .task-card .task-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .task-card .task-actions .btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .task-card .task-actions .btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .category-personal-border { border-left: 4px solid var(--personal-color); }
+        .category-work-border { border-left: 4px solid var(--work-color); }
+        .category-company-border { border-left: 4px solid var(--company-color); }
+
+        /* Animations */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate {
+            animation: fadeSlideIn 0.5s ease both;
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Page -->
+    <div id="homePage" class="page">
+        <h1>Your To‑Do Manager</h1>
+        <p>Keep track of your tasks across categories with ease.</p>
+        <button id="startButton" class="btn">Open Dashboard</button>
+    </div>
+
+    <!-- App Page -->
+    <div id="appPage" class="page" style="display:none;">
+        <header class="header">
+            <h2>To‑Do Dashboard</h2>
+            <nav>
+                <a href="#" id="backHome">Home</a>
+            </nav>
+        </header>
+
+        <section id="dashboard">
+            <h3>Overview</h3>
+            <div class="stats">
+                <div class="stat card">
+                    <h4>Total Tasks</h4>
+                    <p id="totalCount">0</p>
+                </div>
+                <div class="stat card">
+                    <h4>Completed Tasks</h4>
+                    <p id="completedCount">0</p>
+                </div>
+                <div class="stat card">
+                    <h4>Pending Tasks</h4>
+                    <p id="pendingCount">0</p>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressBar" class="progress-inner"></div>
+                </div>
+            </div>
+            <small id="progressText">0% completed</small>
+            <div id="categoryCounts" class="category-counts"></div>
+        </section>
+
+        <section id="taskForm">
+            <h3>Add New Task</h3>
+            <div class="form-group">
+                <label for="clientInput">Client Name</label>
+                <input type="text" id="clientInput" placeholder="Enter client name" />
+            </div>
+            <div class="form-group">
+                <label for="descInput">Task Description</label>
+                <input type="text" id="descInput" placeholder="Describe the task" />
+            </div>
+            <div class="form-group">
+                <label for="dueInput">Due Date</label>
+                <input type="date" id="dueInput" />
+            </div>
+            <div class="form-group">
+                <label for="categorySelect">Category</label>
+                <select id="categorySelect">
+                    <option value="Personal">Personal</option>
+                    <option value="Work">Work</option>
+                    <option value="Company">Company</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tagsInput">Tags (comma separated)</label>
+                <input type="text" id="tagsInput" placeholder="e.g. urgent, follow-up" />
+            </div>
+            <div class="form-actions">
+                <button class="btn" id="addTaskBtn">Add Task</button>
+            </div>
+        </section>
+
+        <section id="taskList">
+            <h3>Your Tasks</h3>
+            <div id="tasksContainer"></div>
+        </section>
+    </div>
+
+    <script>
+        // Storage key
+        const STORAGE_KEY = 'tasksData';
+
+        let tasks = [];
+
+        // Load tasks from localStorage
+        function loadTasks() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                tasks = stored ? JSON.parse(stored) : [];
+            } catch (err) {
+                tasks = [];
+            }
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        }
+
+        // Render dashboard stats
+        function renderDashboard() {
+            const totalCount = tasks.length;
+            const completedCount = tasks.filter(t => t.done).length;
+            const pendingCount = totalCount - completedCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '% completed';
+            // Category counts
+            const counts = { Personal: 0, Work: 0, Company: 0 };
+            tasks.forEach(t => { counts[t.category] = (counts[t.category] || 0) + 1; });
+            const container = document.getElementById('categoryCounts');
+            container.innerHTML = '';
+            Object.keys(counts).forEach(cat => {
+                const count = counts[cat];
+                if (count > 0) {
+                    const span = document.createElement('span');
+                    span.className = 'category-badge category-' + cat.toLowerCase();
+                    span.textContent = `${cat}: ${count}`;
+                    container.appendChild(span);
+                }
+            });
+        }
+
+        // Render tasks list
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.className = 'task-card animate category-' + task.category.toLowerCase() + '-border' + (task.done ? ' done' : '');
+                // Content
+                const content = document.createElement('div');
+                content.innerHTML = `
+                    <strong>${task.client || 'Unnamed Client'}</strong><br/>
+                    <em>${task.description || 'No description provided'}</em><br/>
+                    <small>Due: ${task.dueDate || 'N/A'} | Category: ${task.category} | Tags: ${task.tags || '-'}</small>
+                `;
+                card.appendChild(content);
+                // Actions
+                const actions = document.createElement('div');
+                actions.className = 'task-actions';
+                const doneBtn = document.createElement('button');
+                doneBtn.className = 'btn';
+                doneBtn.textContent = task.done ? 'Done' : 'Mark Done';
+                doneBtn.disabled = task.done;
+                doneBtn.onclick = () => { toggleTaskDone(index); };
+                actions.appendChild(doneBtn);
+                const delBtn = document.createElement('button');
+                delBtn.className = 'btn';
+                delBtn.textContent = 'Delete';
+                delBtn.onclick = () => { deleteTask(index); };
+                actions.appendChild(delBtn);
+                card.appendChild(actions);
+                container.appendChild(card);
+            });
+        }
+
+        // Add new task
+        function addTask() {
+            const client = document.getElementById('clientInput').value.trim();
+            const desc = document.getElementById('descInput').value.trim();
+            const due = document.getElementById('dueInput').value;
+            const category = document.getElementById('categorySelect').value;
+            const tags = document.getElementById('tagsInput').value.trim();
+            if (!client || !desc) {
+                alert('Please provide both client name and task description.');
+                return;
+            }
+            const task = {
+                client: client,
+                description: desc,
+                dueDate: due,
+                category: category,
+                tags: tags,
+                done: false
+            };
+            tasks.push(task);
+            saveTasks();
+            renderDashboard();
+            renderTasks();
+            // Clear inputs
+            document.getElementById('clientInput').value = '';
+            document.getElementById('descInput').value = '';
+            document.getElementById('dueInput').value = '';
+            document.getElementById('tagsInput').value = '';
+        }
+
+        // Toggle done state
+        function toggleTaskDone(index) {
+            tasks[index].done = true;
+            saveTasks();
+            renderDashboard();
+            renderTasks();
+        }
+
+        // Delete task
+        function deleteTask(index) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderDashboard();
+                renderTasks();
+            }
+        }
+
+        // Event listeners
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('appPage').style.display = 'block';
+        });
+        document.getElementById('backHome').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('appPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'flex';
+        });
+        document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            loadTasks();
+            renderDashboard();
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
